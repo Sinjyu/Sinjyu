@@ -1,0 +1,77 @@
+diff --git a/redalert2/src/game/GameSpeed.ts b/redalert2/src/game/GameSpeed.ts
+index 4dfccff..ab0a4cc 100644
+--- a/redalert2/src/game/GameSpeed.ts
++++ b/redalert2/src/game/GameSpeed.ts
+@@ -1,9 +1,22 @@
+ export class GameSpeed {
+     static BASE_TICKS_PER_SECOND = 15;
++    // Optional multiplier for the "fastest" setting, read from the page URL
++    // (e.g. ?turbo=1.5 → 90 ticks/s). Only changes real-time pacing, never the
++    // simulation itself; clamped to [1, 4]. Absent/invalid → 1 (stock 60 ticks/s).
++    static readonly TURBO = GameSpeed.readTurbo();
++    private static readTurbo(): number {
++        try {
++            const raw = Number(new URLSearchParams(globalThis.location?.search ?? "").get("turbo"));
++            return Number.isFinite(raw) && raw > 1 ? Math.min(4, raw) : 1;
++        }
++        catch {
++            return 1;
++        }
++    }
+     static computeGameSpeed(speed: number): number {
+         let ticksPerSecond: number;
+         if (speed === 6) {
+-            ticksPerSecond = 60;
++            ticksPerSecond = 60 * GameSpeed.TURBO;
+         }
+         else if (speed === 5) {
+             ticksPerSecond = 45;
+diff --git a/redalert2/src/gui/screen/game/GameScreen.ts b/redalert2/src/gui/screen/game/GameScreen.ts
+index f8be326..41a67fe 100644
+--- a/redalert2/src/gui/screen/game/GameScreen.ts
++++ b/redalert2/src/gui/screen/game/GameScreen.ts
+@@ -1120,7 +1120,10 @@ export class GameScreen extends RootScreen {
+         }
+         this.gameAnimationLoop = new GameAnimationLoop(localPlayer, this.renderer, this.sound, this.gameTurnMgr, {
+             skipFrames: true,
+-            skipBudgetMillis: 8,
++            // Was 8: once a single sim tick cost >8ms only one tick ran per rendered
++            // frame and the rest were dropped, so game speed collapsed to the frame
++            // rate ("fastest" ran at ~50%). ~2 vsyncs keeps 60 ticks/s up to ~12ms/tick.
++            skipBudgetMillis: 33,
+             frameLimit: this.generalOptions.graphics.frameLimit,
+             // Live getter, so an OS thermal transition mid-match takes effect on
+             // the very next frame with nothing to subscribe or tear down.
+diff --git a/redalert2/src/gui/screen/options/component/Resolution.tsx b/redalert2/src/gui/screen/options/component/Resolution.tsx
+index d9d1a93..36de640 100644
+--- a/redalert2/src/gui/screen/options/component/Resolution.tsx
++++ b/redalert2/src/gui/screen/options/component/Resolution.tsx
+@@ -22,6 +22,12 @@ interface ResolutionSelectProps {
+     strings: Strings;
+ }
+ const desktopResolutions: Resolution[] = [
++    // Large Mac displays (Studio Display / 5K "looks like" 2560x1440). The build
++    // sidebar's cameo rows scale with viewport height, so these make it longer.
++    // Entries larger than the current window are filtered out below.
++    { width: 2560, height: 1600 },
++    { width: 2560, height: 1440 },
++    { width: 1920, height: 1200 },
+     { width: 1920, height: 1080 },
+     { width: 1600, height: 900 },
+     { width: 1366, height: 768 },
+diff --git a/redalert2/src/gui/screen/replay/ReplayScreen.ts b/redalert2/src/gui/screen/replay/ReplayScreen.ts
+index 82a4fa2..af67864 100644
+--- a/redalert2/src/gui/screen/replay/ReplayScreen.ts
++++ b/redalert2/src/gui/screen/replay/ReplayScreen.ts
+@@ -396,7 +396,10 @@ export class ReplayScreen extends RootScreen {
+         game.start();
+         this.gameAnimationLoop = new GameAnimationLoop(undefined, this.renderer as any, this.sound, this.gameTurnMgr!, {
+             skipFrames: true,
+-            skipBudgetMillis: 8,
++            // Was 8: once a single sim tick cost >8ms only one tick ran per rendered
++            // frame and the rest were dropped, so game speed collapsed to the frame
++            // rate ("fastest" ran at ~50%). ~2 vsyncs keeps 60 ticks/s up to ~12ms/tick.
++            skipBudgetMillis: 33,
+             frameLimit: this.generalOptions.graphics.frameLimit,
+             // Live getter, so an OS thermal transition mid-match takes effect on
+             // the very next frame with nothing to subscribe or tear down.
