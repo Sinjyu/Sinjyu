@@ -1,29 +1,42 @@
-# 红警2 + 尤里的复仇 · Mac Studio 本地版
+# 红警2 / 尤里的复仇 · Mac Studio 本地版
 
-目标机器：Mac Studio M4 Max，macOS 26.6.2 (25G83)。
-本目录就是唯一入口：`README.md`（本文）+ `install.sh`（一键安装）+ `patches/`（引擎补丁）+ `tools/`（汉化合并、速度模拟）+ `yr_zh_glossary.tsv`（尤里条目翻译表，第一次运行后生成）。
+目标机器：Mac Studio M4 Max，macOS 26.6.2 (25G83)。界面用原版英文，语音、EVA 播报、音乐都用**你自己正版文件里的原版英文音频**。
 
----
+本目录是唯一入口：
 
-## 0. 先说结论
-
-- **红警2没有官方 Mac 版。** EA 在 2025 年开源了 C&C、红警1、叛逆者、将军，**不包括红警2**，所以没有官方源码能直接编译。
-- 你引用的那段经历，从症状看用的是 **Chrono Divide 引擎**（一个用 TypeScript 从零重写的红警2引擎，跑在浏览器 / WebView 里）这一系的开源移植。我**没找到那篇原文**，所以它具体用的是哪个仓库、改了哪些地方，**只是推测**（理由见第 5 节）。
-- 我选的路线：`ammaarreshi/RedAlert2-Mac-iOS-iPad`（带尤里的复仇、已经支持缩放）+ 本目录的补丁 + 用 `huangkaoya/redalert2` 的中文字符串表做汉化。**素材来自你自己的正版游戏文件**，仓库里不含任何游戏素材。
-
-| 路线 | 适合 | 缩放 | 中文 | 速度 | 代价 |
-|---|---|---|---|---|---|
-| **A. 本方案**（Chrono Divide 引擎 + 补丁） | 想要本地、可改的版本 | ✅ 引擎自带 | ✅ 本方案合并 | ✅ 打补丁后 | 需要命令行，约 30–60 分钟 |
-| B. [chronodivide.com](https://chronodivide.com) 直接在浏览器玩 | 只想快速玩一局 | 看官方 | 看官方 | 看官方 | 改不了代码；以联机为主（我没核实它现在的单机/AI 支持情况） |
-| C. 原版 exe + CrossOver / Wine | 想要 100% 原版手感 | ❌ 原版没有这个功能 | 要中文版的原始文件 | 正常 | CrossOver 收费；**这次没有在 macOS 26 上验证** |
-
-**不建议**用国内"Mac 移植版"下载站（macgf、macat、各类 "for mac 破解"）。那些通常是来源不明的 Wine 封装包，版权和安全都没法核实。
+| 文件 | 用途 |
+|---|---|
+| `README.md` | 本文 |
+| `install.sh` + `patches/` + `tools/sim/` | 路线 A（Chrono Divide 引擎，**含尤里的复仇**） |
+| `openra/install-openra.sh` + `openra/patches/` + `openra/tools/loopsim/` | 路线 B（OpenRA 红警2 Mod，**只有红警2**） |
+| `tools/merge_csf_zh.py` | 路线 A 的可选汉化（默认不用） |
 
 ---
 
-## 1. 下载正版游戏文件（Steam 版，用 SteamCMD 在 Mac 上下）
+## 0. 先说结论：选哪条路
 
-Steam 商店里的 **Command & Conquer: Red Alert 2 and Yuri's Revenge**（App ID **2229850**，两部打包销售）是 Windows 版，Mac 上的 Steam 客户端不会让你安装它。用 Valve 官方的命令行工具 SteamCMD 可以强制下载 Windows 版的文件：
+- **红警2没有官方 Mac 版。** EA 2025 年开源的是 C&C、红警1、叛逆者、将军，不包括红警2。
+- **更正**：你补充的原文说明，作者走的是 **OpenRA + GitHub 上的红警2 Mod**（[OpenRA/ra2](https://github.com/OpenRA/ra2)）。我上一版推测"他用的是 Chrono Divide 引擎"，**这个推测是错的**。这一版按 OpenRA 的代码重新核对了他说的四个问题（第 3 节），每一个都在代码里找到了对应的位置。
+- 两条路线都要用到你自己的正版游戏文件（第 1 节），仓库里不含任何游戏素材。
+
+| | A. Chrono Divide 引擎（ammaar 的移植） | B. OpenRA 红警2 Mod（原文作者的路线） |
+|---|---|---|
+| 尤里的复仇 | ✅ 有 | ❌ **没有**，只有红警2本体（阵营只有盟军和苏联各国） |
+| 运行方式 | 本地服务器 + 浏览器 | 原生 Mac 程序（SDL2 + OpenGL） |
+| 原版英文语音 / EVA / 音乐 | ✅ 从你的文件导入 | ✅ 直接读你的 `ra2.mix` / `language.mix` / `theme.mix` |
+| 完成度 | 遭遇战（skirmish）可玩；战役只在另一个分支 LEBRUNtho 里，而且是 alpha，本方案没接 | 作者在主菜单写明是 **pre-alpha**："Many features are missing or incomplete, performance has not been optimized" |
+| 缩放 / 建造栏 / 速度 | 补丁处理（第 2 节） | 补丁处理（第 3 节） |
+| 依赖 | Xcode 命令行工具、Homebrew、ffmpeg、bun | Xcode 命令行工具、.NET 8 SDK |
+
+**建议**：你最初要的是尤里的复仇，所以优先选 **A**。想要原生 App 的体验、又能接受只有红警2，就选 **B**。两条路线互不影响，可以都装。
+
+其他选择：[chronodivide.com](https://chronodivide.com) 可以直接在浏览器里玩，但没法改代码（它现在支不支持单机/AI，我没有核实）。原版 exe 配 CrossOver/Wine 能保留 100% 原版手感，但原版本身没有缩放功能，而且我这次没有在 macOS 26 上验证。**不建议**用国内"Mac 移植版"下载站，那些是来源不明的封装包。
+
+---
+
+## 1. 下载正版游戏文件（两条路线共用）
+
+Steam 上的 **Command & Conquer: Red Alert 2 and Yuri's Revenge**（App ID **2229850**，两部打包卖）是 Windows 版，Mac 版 Steam 客户端不让你装。用 Valve 官方的 SteamCMD 可以强制下载 Windows 版文件：
 
 ```bash
 brew install --cask steamcmd
@@ -33,107 +46,147 @@ steamcmd +@sSteamCmdForcePlatformType windows \
          +app_update 2229850 validate +quit
 ```
 
-- 会提示输入密码和 Steam 令牌验证码（Steam Guard）。账号里必须**已经买了**这款游戏。
-- 如果 macOS 拦截 SteamCMD 自带的 `Breakpad.framework`，或者报 `Failed to load steamconsole.dylib`，去「系统设置 → 隐私与安全性」点"仍要打开"，然后再跑一次。
-- 下完后检查 `~/Games/RA2` 里有没有 `ra2.mix`、`language.mix`、`multi.mix`、`ra2md.mix`、`langmd.mix`（最后两个是尤里的复仇的文件）。
-- 已有其他来源的正版文件（光盘、Windows 电脑上 Steam / EA App 装好的目录），直接把整个文件夹拷过来也可以。
-- Steam 版自带哪些语言我**没查到确切信息**，可以看商店页确认。本方案的中文不依赖它。
+- 账号里必须**已经买了**这款游戏。过程中会要求输入密码和 Steam Guard 验证码。
+- 如果 macOS 拦截 `Breakpad.framework`，或者报 `Failed to load steamconsole.dylib`：去「系统设置 → 隐私与安全性」点"仍要打开"，然后再跑一次。
+- 下完后检查文件：路线 B 需要 `ra2.mix`、`language.mix`（原版语音在里面），`theme.mix`（音乐）可选；路线 A 还需要 `multi.mix`，以及尤里的复仇的 `ra2md.mix`、`langmd.mix`。
+- 光盘版或 Windows 电脑上装好的目录也可以，整个文件夹拷过来即可。
 
-## 2. 准备工作（一次性）
+---
+
+## 2. 路线 A：Chrono Divide 引擎（含尤里的复仇）
+
+### 准备（一次性）
 
 ```bash
-xcode-select --install                 # 命令行工具，自带 git 和 python3
+xcode-select --install
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"   # 已装 Homebrew 就跳过
-brew install ffmpeg                    # 用来转换音乐和视频
-curl -fsSL https://bun.sh/install | bash   # JS 运行时；装完重开一个终端窗口
+brew install ffmpeg
+curl -fsSL https://bun.sh/install | bash      # 装完重开终端
 ```
 
-浏览器：上游推荐 Chrome / Edge，ammaar 的版本主要针对 WebKit（Safari 用的内核）调过。**两种我都没在真机上测过**，建议先用 Chrome，不行再换 Safari。
-
-## 3. 安装
+### 安装与启动
 
 ```bash
 git clone -b claude/red-alert-2-mac-config-83tqt5 https://github.com/sinjyu/sinjyu.git
 cd sinjyu/ra2-mac
 ./install.sh "$HOME/Games/RA2"
-```
-
-`install.sh` 的具体步骤（可以重复执行，已经完成的步骤会跳过）：
-
-1. 检查 git、bun、ffmpeg、python3、curl 是否都装了
-2. 把 ammaar 的工程克隆到 `~/ra2-mac-port`（可以用 `RA2_WORKDIR` 改位置），并固定在补丁对应的那个提交 `991945d`
-3. 打上 `patches/ammaar-991945d-mac-fixes.patch`
-4. 运行工程自带的 `scripts/setup.sh`，从你的游戏文件导入素材，要几分钟（**不会从网上下载任何游戏素材**）
-5. 下载 huangkaoya 的中文表（同样固定到某个提交），和你的英文尤里表合并，再把 `config.ini` 改成指向合并后的中文表
-
-## 4. 启动
-
-```bash
 cd ~/ra2-mac-port/redalert2 && RA2_HTTP=1 bun run dev
 ```
 
-然后用浏览器打开 **http://localhost:4000/?shell=1**
+然后用浏览器打开 **http://localhost:4000/?shell=1**（先用 Chrome，不行再换 Safari，两种我都没在真机上测过）。
 
-- 想比"最快"档还快：`http://localhost:4000/?shell=1&turbo=1.5`（倍数 1–4，见第 5 节）
-- 进游戏后在「选项 → 分辨率」里选 **2560×1440** 或 **2560×1600**（这两个是补丁新加的；比浏览器窗口大的分辨率会自动隐藏），或者直接全屏。
-- 注意：开发服务器监听的是 `0.0.0.0`，同一局域网里的其他设备也能访问 4000 端口。
+- `install.sh` 会克隆 [ammaarreshi/RedAlert2-Mac-iOS-iPad](https://github.com/ammaarreshi/RedAlert2-Mac-iOS-iPad)，锁定在提交 `991945d`，打上补丁，再从你的文件导入素材。可以重复执行，做过的步骤会跳过。默认是英文界面；想要中文就用 `RA2_ZH=1 ./install.sh ...`。
+- 想比"最快"档还快：在网址后加 `&turbo=1.5`（可以设 1–4 倍）。
+- 「Options → Resolution」里选 2560×1440 或 2560×1600 能让建造栏更长，直接全屏也可以。
+- 开发服务器监听 `0.0.0.0`，同一局域网里的其他设备也能访问 4000 端口。
 
----
+### 改了什么（代码位置基于 `991945d`）
 
-## 5. 原文作者遇到的四个问题：原因和处理
+| 问题 | 原因 | 处理 |
+|---|---|---|
+| 缩放 | ammaar 的版本已经支持滚轮缩放，范围从"整张地图刚好装满屏幕"到 2 倍（`CameraZoom.ts`） | 不用改 |
+| 建造栏短 | 行数按画面高度算（`Hud.ts`）。默认分辨率 1024×768，桌面版最高只能选 1920×1080 | `Resolution.tsx` 里加了 2560×1600、2560×1440、1920×1200 |
+| 最快也慢 | `GameScreen.ts` 每帧只给模拟 8ms 预算，超出的 tick 会**直接丢掉**。单个 tick 超过约 8ms、帧率又掉下来时，速度就跟着帧率掉（30fps 时只剩 50%） | 预算改成 33ms；另外加了 `?turbo=` 参数 |
 
-以下"原因"都是我读代码找到的，文件位置基于 ammaar 的提交 `991945d` 和 huangkaoya 的提交 `898d891`。
+模拟结果（`tools/sim/run.sh`，驱动的是引擎原样的 `GameAnimationLoop.ts`，目标 60 tick/s）：
 
-| 问题 | 代码里的原因 | 处理 | 验证情况 |
-|---|---|---|---|
-| **视角不能缩放** | huangkaoya 上游版：滚轮缩放只在 `freeCamera=true` 时生效（`CameraZoom.ts`），而负责打开这个开关的 `MockDevToolsApi.registerVar` 只是个空壳，所以普通玩家根本缩放不了。ammaar 的版本已经改好：滚轮或触控板双指滑动缩放，范围从"整张地图刚好装满屏幕"到 2 倍（`CameraZoom.ts`、`WorldView.ts`）。另外，原文说的"zoom out 参数"如果指的是 `fullScreenZoomOut=1.3`，这个值在两个仓库里**都没有被任何代码读取**，改了也没用 | 用 ammaar 版本，**不需要额外改** | 读代码确认；没在真机上试手感。如果觉得触控板太灵敏，每次滚动的步长 `0.1` 在 `WorldInteraction.ts` 的 `handleWheel` 里 |
-| **建造菜单太短** | 右侧建造栏能显示几行，是按画面高度算的：`Hud.ts` 里 `repeaterCount = floor((画面高 − 顶部 − 底部) / 每行高度)`。默认分辨率是 `config.ini` 里的 1024×768，桌面版分辨率列表最高只有 1920×1080 | 补丁在 `Resolution.tsx` 里加了 2560×1600、2560×1440、1920×1200；也可以直接全屏 | 类型检查和构建都通过；没在真机上看效果 |
-| **没有中文** | ammaar 版本用的是从你自己 `langmd.mix` 里提取的**英文**尤里表（`generalmd.csf`）。huangkaoya 版本带中文表，但只覆盖红警2（4480 条，比如"遭遇战""美国大兵""巨炮"），**尤里新增的条目没有**（我抽查了 Name:SLAV、Name:BFRT、Name:YACNST 等，都缺）。这正好对应原文"能转译的转译，不能转译的自己翻译" | `tools/merge_csf_zh.py`：中文表里有的条目用中文；没有的保留英文，并写进 `yr_zh_glossary.tsv`。你在第三列填好中文后重跑 `install.sh`，填过的条目优先使用。输出文件的语言标记是简体中文，引擎会同时加载 `zh-CN.json` | 用合成数据测试，并用**引擎自己的 `CsfFile.ts`** 解析输出：识别为 `zh-CN`，中英混合和换行都正确。你那份真实英文表里有多少条缺中文，要在你的机器上跑过才知道 |
-| **字体** | 这个引擎不用原版的位图字体 `game.fnt`，文字用浏览器字体渲染（`'Fira Sans Condensed', Arial, sans-serif`）。中文字形会自动用系统字体补上（macOS 上通常是苹方），所以不会出现方块 | 不需要处理。原文换 FreeSans 是为了外观更像经典版，属于审美选择 | 读代码确认；没截图验证 |
-| **调到最快还是慢** | 见下一节 | 补丁 | 模拟验证（见下一节） |
-
-### 速度问题的根因
-
-- **满速是多少**：游戏速度滑块 0–6 档，第 6 档（最快）= 每秒 60 个逻辑帧（tick），由 `GameSpeed.ts` 写死。每个 tick 让游戏内时钟前进 1/15 秒，所以满速时游戏时钟走得是现实的 4 倍。
-- **为什么会达不到**：`GameScreen.ts` 给游戏循环设了 `skipBudgetMillis: 8`，也就是每渲染一帧，最多花 8ms 跑游戏逻辑。在 `GameAnimationLoop.ts` 里，超出预算后剩下的 tick 会被**直接丢掉，不会补**。结果是：只要单个 tick 超过约 8ms，并且"逻辑 + 渲染"超过一帧的时间（60Hz 下是 16.7ms），每帧就只能跑 1 个 tick，**游戏速度会被压到和帧率一样**，30fps 时就只有一半速度。分辨率开大，渲染变重，会更容易触发。原文说的"某个渲染逻辑把速度上限卡死"，我推测就是这里，但无法确认他改的就是这一处。
-- **补丁做了什么**：
-  1. 预算从 8ms 改成 33ms（约两帧的时间），`GameScreen.ts` 和 `ReplayScreen.ts` 都改了；
-  2. 新增可选的 `?turbo=` 网址参数，把最快档乘上 1–4 倍（`GameSpeed.ts`）。它只改变游戏推进的快慢，不改变游戏逻辑本身。
-
-模拟结果：`tools/sim/run.sh` 用一个虚拟时钟驱动引擎**原样的** `GameAnimationLoop.ts`（只把两个 import 换成空实现），目标是 60 tick/s：
-
-| 显示器 | 单 tick 耗时 | 渲染耗时 | 原版 8ms 预算 | 补丁 33ms 预算 |
+| 显示器 | 单 tick 耗时 | 渲染耗时 | 原版 | 补丁后 |
 |---|---|---|---|---|
 | 60Hz | 2ms | 4ms | 100% | 100% |
-| 60Hz | 3ms | 20ms | 100% | 100% |
 | 60Hz | 10ms | 8ms | **50%** | **100%** |
 | 60Hz | 12ms | 10ms | **50%** | **100%** |
-| 60Hz | 14ms | 12ms | 50% | 75% |
 | 120Hz | 12ms | 10ms | 67% | **100%** |
 | 60Hz | 20ms | 10ms | 50% | 50%（机器确实跟不上） |
 
-完全去掉预算也不行：我测了单 tick 40ms 的情况，会掉进"越慢越追、越追越慢"的循环，帧率只剩 0.1fps。所以保留了预算，只是把它调大。我也试过把丢掉的 tick 记下来下一帧补跑，在模拟里没有任何改善，所以没有采用。
-
-**在你机器上自测速度**：开一局，选最快档，用秒表计时 30 秒，看右侧栏的游戏时钟有没有走 **2:00**。如果明显不到，说明还有我没找到的瓶颈。
+**自测速度**：最快档下每个 tick 让游戏时钟走 1/15 秒，所以用秒表计时 30 秒，右侧栏的游戏时钟应该走过 **2:00**。
 
 ---
 
-## 6. 没验证的地方（请当作风险）
+## 3. 路线 B：OpenRA 红警2 Mod（原文作者的路线，只有红警2）
 
-- **没有在 Mac 真机上跑过。** 这个环境是 Linux，也没有游戏素材。我实际验证过的：补丁能干净地打上、TypeScript 类型检查没有新增错误（原工程本来就有 42 个，和改之前完全一样）、Vite 生产构建成功、`turbo` 参数解析的单元测试、汉化合并（用合成数据，并经引擎解析器读取）、速度模拟，以及 `install.sh` 的克隆、锁定提交、打补丁和重复执行（用一个假的游戏目录，到导入素材那一步就停了）。
-- 原文作者的具体做法是我推测的（没找到原文）。
-- M4 Max 的单核性能很强，正常对局里单 tick 可能远低于 8ms，那样原版其实也能满速。补丁主要保证大地图、后期、高分辨率时不掉速。
-- 授权：Chrono Divide 引擎的作者没有开源；huangkaoya 仓库标的 GPL-3.0，ammaar 自己在 README 里也说这个授权链条"没法核实"。**仅限个人、非商业使用**，不要分发打包好的版本。
-- 尤里条目的中文需要你自己（或交给我）翻译。不同版本的官方译名不一样（大陆版和台湾版就不同），我不替你选。
+### 准备（一次性）
 
-## 7. 来源和版本锁定（可追溯）
+```bash
+xcode-select --install     # 提供 git、make、python3
+```
+
+再装 **.NET 8 SDK（Arm64 版）**：用微软官网 dotnet.microsoft.com 的 macOS Arm64 安装包。
+
+不需要 Homebrew 装 sdl2 / openal-soft / freetype（网上旧教程会让你装）。这个引擎版本用到的 SDL2、FreeType、OpenAL、Lua 都来自 NuGet 包，包里自带 `osx-arm64` 原生库，编译时会自动下载。
+
+### 安装与启动
+
+```bash
+cd sinjyu/ra2-mac/openra
+./install-openra.sh "$HOME/Games/RA2"
+~/openra-ra2/play.sh
+```
+
+`install-openra.sh` 做的事（可重复执行，做过的步骤会跳过）：
+
+1. 克隆 [OpenRA/ra2](https://github.com/OpenRA/ra2)，锁定在提交 `61e24e3`（2025-11-28）
+2. 打 Mod 补丁
+3. 下载它指定的引擎 `release-20231010`，打引擎补丁
+4. 编译
+5. 把 `ra2.mix`、`language.mix`、`theme.mix` 拷到 `~/Library/Application Support/OpenRA/Content/ra2/`。这就是原文说的"自己找原版安装包，把素材替换进去"那一步：Mod 自带的安装器只认光盘和 Windows 注册表，在 Mac 上用不了
+6. 生成 `play.sh`。OpenRA 这个版本指定用 .NET 6（已停止支持），没装 6 时，`play.sh` 会设置 `DOTNET_ROLL_FORWARD=Major`，让它跑在 .NET 8 上
+
+### 原文四个问题在 OpenRA 里的原因和处理
+
+代码位置基于引擎 `release-20231010`、Mod `61e24e3`。
+
+| 问题 | 代码里的原因 | 处理 |
+|---|---|---|
+| **视角不能缩放** | 滚轮能缩放，但"最远能缩多远"由设置里的 *Battlefield Camera* 档位决定。最远的 Far 档只允许屏幕显示 900–1300 游戏像素高（引擎默认值，在 `WorldViewportSizes.cs`）；Mod 没有改过这个值 | Mod 补丁在 `mod.yaml` 加了 `WorldViewportSizes: FarWindowHeights: 1200, 1800`。进游戏后选 Settings → Display → Battlefield Camera → **Far**。屏幕够高时还有 **Furthest**（1 屏幕像素 = 1 游戏像素） |
+| **建造菜单长度不对** | `chrome/ingame-player.yaml` 里 `ProductionPalette` 写死了 `MaximumRows: 6`（引擎默认是不限）。引擎本身会按屏幕高度限制行数（`ClassicProductionLogic.cs`） | 改成 `MaximumRows: 12`，实际行数仍受屏幕高度限制。背景条是逐行复制的，会跟着变长 |
+| **没有中文** | 这个引擎版本的界面文字大多直接写在 yaml 里；默认字体 FreeSans 没有汉字，我用引擎的 FreeType 代码实测，每个汉字都渲染成同一个方框 | **你说英文就行，所以不处理** |
+| **最快也慢得离谱**（原文："引擎里某个渲染逻辑把速度上限给卡死了"） | `Game.cs` 主循环里，正常对局每跑完一个逻辑 tick，就设 `renderBeforeNextTick = true`，强制先渲染一帧才能跑下一个 tick。结果是**逻辑速度永远超不过帧率**。默认又开着 VSync（`Settings.cs` 里 `VSync = true`），60Hz 屏幕上一帧只要超过 16.7ms，就掉到 30fps，也就只剩 30 tick/s。最快档是 `Timestep: 20`，也就是 50 tick/s，这时只剩 60% 速度。这段逻辑一直保留到 2026-10 的最新开发版（bleed） | 引擎补丁：只有距离上次渲染超过 33ms 才强制渲染，其余时间 tick 可以连着跑。Mod 补丁另外加了两个速度档：**Turbo**（16ms，约等于原版"最快"的 60fps）和 **Ludicrous**（10ms，100 tick/s） |
+
+速度模拟（`openra/tools/loopsim/run.sh`：用 C# 照搬 `Game.cs` 主循环的时序逻辑，换成虚拟时钟，VSync 按"等到下一次刷新"建模）：
+
+| 速度档 | 单 tick | 渲染 | VSync | 原版 | 补丁后 |
+|---|---|---|---|---|---|
+| fastest (50/s) | 2ms | 5ms | 60Hz | 100% | 100% |
+| fastest | 3ms | 12ms | 60Hz | 100% | 100% |
+| fastest | 4ms | 18ms | 60Hz | **60%** | **100%**（30fps） |
+| fastest | 4ms | 25ms | 关 | 69% | **100%** |
+| fastest | 6ms | 35ms | 60Hz | **40%** | **100%**（15fps） |
+| Turbo (62.5/s) | 4ms | 18ms | 60Hz | 48% | **100%** |
+| Ludicrous (100/s) | 3ms | 12ms | 60Hz | 60%（被 VSync 卡在 60/s） | **100%** |
+| fastest | 15ms | 10ms | 60Hz | 60% | 89% |
+
+代价是渲染太慢时帧率会降（表里括号是帧率），但游戏速度不再跟着掉。
+
+### 验证过什么（在 Linux 上，用 .NET 8 SDK）
+
+- 原版 Mod 和打补丁后的 Mod 都能编译。
+- OpenRA 自带的 `utility.sh --check-yaml` 在补丁前后都零报错。我故意把速度档的语言键写错，它能报出来，说明这项检查确实生效。
+- 写了个小程序，用引擎自己的 `FieldLoader` 读取 `mod.yaml`，确认 `FarWindowHeights` 读到的是 1200,1800（原版没有这一段时，用的是默认值 900,1300）。
+- 补丁后的 `Game.cs` 在引擎最严格的代码分析下没有任何报错；其他 201 个报错是新版 SDK 对老文件的风格提示，原本就有。
+- `install-openra.sh` 连跑两次：第一次补丁、编译、拷贝全部完成，第二次各步正确跳过。用的是假的游戏文件，而且因为这个环境下载不了 GitHub 的 zip 包，引擎换成了同一个 tag 的 git 克隆。
+
+---
+
+## 4. 没验证的地方（请当作风险）
+
+- **两条路线都没在 Mac 真机上跑过**：这个环境是 Linux，没有显示器，也没有游戏素材。上面列的验证都是编译、规则检查、代码级模拟。
+- 原文作者具体改了哪些地方，我看不到；OpenRA 的四个对应点是我读代码找到的，和他描述的现象吻合，但**不能确认就是他改的那几处**。
+- OpenRA Mod 的单位语音表里有作者自己标注的临时占位（`voices.yaml`："gotta put something as temp else game crashes"），个别死亡音效不是正确的那一条。这是 Mod 本身的问题。
+- `DOTNET_ROLL_FORWARD=Major`（让 .NET 6 程序跑在 .NET 8 上）我只用规则检查工具验证过能运行，没跑过完整游戏。如果游戏启动报错，就装 .NET 6 运行时（微软存档页面还能下载），`play.sh` 检测到 6 就不会再设这个变量。
+- M4 Max 很快，正常对局里两条路线的原版可能本来就能满速。补丁保证的是大地图、后期、高分辨率时不掉速。
+- 授权：路线 A 的引擎作者没有开源，授权链条无法核实；路线 B 是 GPL-3.0。**两条都只限个人、非商业使用**，不要分发打包好的版本。
+
+## 5. 来源和版本锁定
 
 | 内容 | 来源 | 锁定版本 |
 |---|---|---|
-| 移植工程 | https://github.com/ammaarreshi/RedAlert2-Mac-iOS-iPad | `991945d60a7139d3c4c438326abb6d3c093b2497`（2026-08-08） |
-| 中文 RA2 字符串表 | https://github.com/huangkaoya/redalert2 `public/general.csf` | `898d89188542a3028a232031ce1a0bdc7c605b6f`（2026-09-03） |
-| 本目录的补丁 | `patches/ammaar-991945d-mac-fixes.patch` | 改了 4 个文件，+28 / −3 行 |
-| SteamCMD 跨平台下载 | https://developer.valvesoftware.com/wiki/SteamCMD | — |
+| 路线 A 移植工程 | https://github.com/ammaarreshi/RedAlert2-Mac-iOS-iPad | `991945d60a7139d3c4c438326abb6d3c093b2497`（2026-08-08） |
+| 路线 A 补丁 | `patches/ammaar-991945d-mac-fixes.patch` | 4 个文件，+28 / −3 行 |
+| 路线 B Mod | https://github.com/OpenRA/ra2 | `61e24e3c1d7b586aa55a86096d29e1559aa9b994`（2025-11-28） |
+| 路线 B 引擎 | https://github.com/OpenRA/OpenRA | `release-20231010`（由 Mod 的 `mod.config` 指定） |
+| 路线 B 补丁 | `openra/patches/ra2-61e24e3-speed-zoom-sidebar.patch`、`openra/patches/engine-release-20231010-loop.patch` | Mod 3 个文件 +19 / −1 行；引擎 1 个文件 +11 / −1 行 |
+| 可选中文表（路线 A） | https://github.com/huangkaoya/redalert2 `public/general.csf` | `898d89188542a3028a232031ce1a0bdc7c605b6f` |
+| SteamCMD | https://developer.valvesoftware.com/wiki/SteamCMD | — |
 | 游戏 | Steam App 2229850 | — |
 
-升级移植工程时，先把 `install.sh` 里的 `PORT_PIN` 改成新的提交，再看补丁能不能打上；打不上就要重新做补丁，不要硬打。
+升级任一工程时，先改脚本里的锁定版本（`PORT_PIN` / `MOD_PIN`），再看补丁能不能打上；打不上就重新做补丁，不要硬打。

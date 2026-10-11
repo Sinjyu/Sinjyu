@@ -1,0 +1,52 @@
+diff --git a/mods/ra2/chrome/ingame-player.yaml b/mods/ra2/chrome/ingame-player.yaml
+index b6b41ae..4cb72df 100644
+--- a/mods/ra2/chrome/ingame-player.yaml
++++ b/mods/ra2/chrome/ingame-player.yaml
+@@ -493,7 +493,7 @@ Container@PLAYER_WIDGETS:
+ 					IconMargin: 2, 2
+ 					IconSpriteOffset: -1, -1
+ 					MinimumRows: 4
+-					MaximumRows: 6
++					MaximumRows: 12
+ 					HotkeyPrefix: Production
+ 					HotkeyCount: 24
+ 				Container@PRODUCTION_TYPES:
+diff --git a/mods/ra2/languages/rules/en.ftl b/mods/ra2/languages/rules/en.ftl
+index 41e8431..3c17ba0 100644
+--- a/mods/ra2/languages/rules/en.ftl
++++ b/mods/ra2/languages/rules/en.ftl
+@@ -16,5 +16,9 @@ options-starting-units =
+     .medium = Medium
+     .heavy = Heavy
+ 
++options-game-speed-extra =
++    .turbo = Turbo
++    .ludicrous = Ludicrous
++
+ options-difficulty =
+     .normal = Normal
+diff --git a/mods/ra2/mod.yaml b/mods/ra2/mod.yaml
+index b828bc3..9ca3683 100644
+--- a/mods/ra2/mod.yaml
++++ b/mods/ra2/mod.yaml
+@@ -321,6 +321,20 @@ GameSpeeds:
+ 			Name: options-game-speed.fastest
+ 			Timestep: 20
+ 			OrderLatency: 6
++		turbo:
++			Name: options-game-speed-extra.turbo
++			Timestep: 16
++			OrderLatency: 8
++		ludicrous:
++			Name: options-game-speed-extra.ludicrous
++			Timestep: 10
++			OrderLatency: 12
++
++# How far the camera may zoom out. Engine defaults are Close 480-600, Medium 600-900,
++# Far 900-1300 (visible world height in px). Far is widened so the mouse wheel can pull
++# back further; "Native" (1 screen px = 1 world px) is still available in the settings.
++WorldViewportSizes:
++	FarWindowHeights: 1200, 1800
+ 
+ ModContent:
+ 	InstallPromptMessage: Red Alert 2 requires artwork and audio from the original game.

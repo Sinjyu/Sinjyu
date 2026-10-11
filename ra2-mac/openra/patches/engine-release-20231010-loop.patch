@@ -1,0 +1,35 @@
+--- a/OpenRA.Game/Game.cs
++++ b/OpenRA.Game/Game.cs
+@@ -766,6 +766,14 @@
+ 			// than this, then that limit will be used.
+ 			const int MinReplayFps = 10;
+ 
++			// Mac/RA2 patch: the stock loop forced a render after *every* logic tick, so the
++			// simulation could never run faster than the frame rate. With VSync on a 60 Hz
++			// display, or whenever a frame took longer than the game Timestep, "fastest" ran
++			// at 30-60% speed. Only force a render if none has happened for this long; the
++			// remaining ticks run back to back and the normal render path fills the slack.
++			const int MinGameplayFps = 30;
++			var lastRenderTime = RunTime;
++
+ 			// Timestamps for when the next logic and rendering should run
+ 			var nextLogic = RunTime;
+ 			var nextRender = RunTime;
+@@ -815,7 +823,8 @@
+ 						LogicTick();
+ 
+ 						// Force at least one render per tick during regular gameplay
+-						if (OrderManager.World != null && !OrderManager.World.IsLoadingGameSave && !OrderManager.World.IsReplay)
++						if (OrderManager.World != null && !OrderManager.World.IsLoadingGameSave && !OrderManager.World.IsReplay
++							&& RunTime - lastRenderTime >= 1000 / MinGameplayFps)
+ 							renderBeforeNextTick = true;
+ 					}
+ 
+@@ -834,6 +843,7 @@
+ 						forcedNextRender = now + maxRenderInterval;
+ 
+ 						RenderTick();
++						lastRenderTime = RunTime;
+ 						renderBeforeNextTick = false;
+ 					}
+ 

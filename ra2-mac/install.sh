@@ -8,7 +8,8 @@
 #   1. 克隆 ammaarreshi/RedAlert2-Mac-iOS-iPad 到 $RA2_WORKDIR（默认 ~/ra2-mac-port），锁定到已验证的提交
 #   2. 打上 patches/ 里的补丁（速度、分辨率/侧边栏、turbo）
 #   3. 运行它自带的 scripts/setup.sh，从你的正版文件导入素材（不联网下载任何游戏素材）
-#   4. 下载 huangkaoya/redalert2 的中文字符串表，与你的英文 YR 表合并 → 中文界面
+#   4. （可选，RA2_ZH=1 时）下载 huangkaoya/redalert2 的中文字符串表，与你的英文 YR 表合并 → 中文界面
+#      默认保持原版英文界面；语音一直是原版英文
 #   5. 打印启动命令
 set -euo pipefail
 
@@ -58,9 +59,11 @@ else
   ./scripts/setup.sh "$RETAIL"
 fi
 
-bold "5/5 中文字符串表"
+bold "5/5 中文字符串表（可选）"
 EN_CSF="$WORK/redalert2/public/generalmd.csf"
-if [ ! -f "$EN_CSF" ]; then
+if [ -z "${RA2_ZH:-}" ]; then
+  echo "  跳过，保持英文界面（要中文：RA2_ZH=1 ./install.sh ...）"
+elif [ ! -f "$EN_CSF" ]; then
   echo "  没找到 $EN_CSF（你的文件里没有 langmd.mix？）→ 跳过汉化，界面保持英文"
 else
   mkdir -p "$WORK/zh"
@@ -77,6 +80,5 @@ cat <<EOF
   然后用浏览器打开  http://localhost:4000/?shell=1
   想比"最快"还快：  http://localhost:4000/?shell=1&turbo=1.5   (1~4 倍，仅改节奏)
 
-  未翻译的尤里条目在：$GLOSSARY
-  填好第三列后重跑本脚本即可（会跳过已完成的步骤）。
+  （如果开了 RA2_ZH=1）未翻译的尤里条目在：$GLOSSARY，填好第三列后重跑本脚本。
 EOF
