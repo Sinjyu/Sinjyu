@@ -39,17 +39,26 @@
 Steam 上的 **Command & Conquer: Red Alert 2 and Yuri's Revenge**（App ID **2229850**，两部打包卖）是 Windows 版，Mac 版 Steam 客户端不让你装。用 Valve 官方的 SteamCMD 可以强制下载 Windows 版文件：
 
 ```bash
-brew install --cask steamcmd
-steamcmd +@sSteamCmdForcePlatformType windows \
-         +force_install_dir "$HOME/Games/RA2" \
-         +login 你的Steam用户名 \
-         +app_update 2229850 validate +quit
+# 直接从 Valve 下载（Homebrew 的 steamcmd cask 也只是下载同一个文件）
+mkdir -p ~/steamcmd && cd ~/steamcmd
+curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz" | tar zxvf -
+
+# 把 YOUR_STEAM_NAME 换成你的 Steam 登录名（不是昵称），整段一起粘贴
+./steamcmd.sh +@sSteamCmdForcePlatformType windows \
+              +force_install_dir "$HOME/Games/RA2" \
+              +login YOUR_STEAM_NAME \
+              +app_update 2229850 validate +quit
 ```
+
+- 第一次运行会先自我更新，花几分钟，这是正常的。
+- 如果提示需要 Rosetta，运行 `softwareupdate --install-rosetta --agree-to-license` 后再跑一次（我没核实这个 macOS 版是不是 Intel 程序，所以写成条件）。
+- `brew install --cask steamcmd` 也行，但它在某些机器上会报 `undefined method 'first' for nil`（Homebrew 自身的问题，见下面的说明），直接下载最省事。
 
 - 账号里必须**已经买了**这款游戏。过程中会要求输入密码和 Steam Guard 验证码。
 - 如果 macOS 拦截 `Breakpad.framework`，或者报 `Failed to load steamconsole.dylib`：去「系统设置 → 隐私与安全性」点"仍要打开"，然后再跑一次。
 - 下完后检查文件：路线 B 需要 `ra2.mix`、`language.mix`（原版语音在里面），`theme.mix`（音乐）可选；路线 A 还需要 `multi.mix`，以及尤里的复仇的 `ra2md.mix`、`langmd.mix`。
 - 光盘版或 Windows 电脑上装好的目录也可以，整个文件夹拷过来即可。
+- 关于 `brew install --cask steamcmd` 报 `undefined method 'first' for nil`：错误出在 Homebrew 解析在线 cask 数据的代码里（`cask_loader.rb` 的 `FromAPILoader`），跟 SteamCMD 本身无关。我**推测**是本机 Homebrew 版本落后于在线 cask 数据（steamcmd 的 cask 用了较新的写法），没有找到对应的官方 issue。想修 Homebrew 可以试 `brew update`，不行再 `brew update-reset`。
 
 ---
 
