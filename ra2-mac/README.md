@@ -79,8 +79,10 @@ curl -fsSL https://bun.sh/install | bash      # 装完重开终端
 git clone -b claude/red-alert-2-mac-config-83tqt5 https://github.com/sinjyu/sinjyu.git
 cd sinjyu/ra2-mac
 ./install.sh "$HOME/Games/RA2"
-cd ~/ra2-mac-port/redalert2 && RA2_HTTP=1 bun run dev
+cd ~/ra2-mac-port/redalert2 && RA2_HTTP=1 bun run dev:bun
 ```
+
+用 `dev:bun` 而不用 `dev`：工程的 `dev` 用的是系统里的 Node 来跑 Vite，而 Vite 8 要求 Node 20.19 以上。Mac 上常见的旧版 Node（比如 18）会直接报 `CustomEvent is not defined`。`dev:bun` 改用 bun 来跑，不依赖 Node 的版本。
 
 然后用浏览器打开 **http://localhost:4000/?shell=1**（先用 Chrome，不行再换 Safari，两种我都没在真机上测过）。
 

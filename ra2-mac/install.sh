@@ -76,7 +76,7 @@ fi
 bold "完成。启动："
 cat <<EOF
 
-  cd "$WORK/redalert2" && RA2_HTTP=1 bun run dev
+  cd "$WORK/redalert2" && RA2_HTTP=1 bun run dev:bun
   然后用浏览器打开  http://localhost:4000/?shell=1
   想比"最快"还快：  http://localhost:4000/?shell=1&turbo=1.5   (1~4 倍，仅改节奏)
 
