@@ -33,7 +33,7 @@ find_retail() { find "$RETAIL" -maxdepth 1 -iname "$1" -print -quit; }
 
 bold "1/6 检查依赖"
 for c in git make curl unzip python3 dotnet patch; do
-  command -v "$c" >/dev/null 2>&1 || die "缺少 $c（见 README『OpenRA 路线』准备工作）"
+  command -v "$c" >/dev/null 2>&1 || die "缺少 ${c}（见 README『OpenRA 路线』准备工作）"
 done
 for f in ra2.mix language.mix; do
   [ -n "$(find_retail "$f")" ] || die "$RETAIL 里没有 $f"
@@ -68,7 +68,7 @@ mkdir -p "$CONTENT"
 for f in ra2.mix language.mix theme.mix; do
   src="$(find_retail "$f")"
   if [ -z "$src" ]; then
-    echo "  （没有 $f，跳过；theme.mix 只是音乐）"
+    echo "  （没有 ${f}，跳过；theme.mix 只是音乐）"
   elif [ -f "$CONTENT/$f" ] && cmp -s "$src" "$CONTENT/$f"; then
     echo "  $f 已存在"
   else

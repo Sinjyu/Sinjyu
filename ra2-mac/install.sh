@@ -30,7 +30,7 @@ RETAIL="${1:-}"
 
 bold "1/5 检查依赖"
 for c in git bun ffmpeg python3 curl; do
-  command -v "$c" >/dev/null 2>&1 || die "缺少 $c（见 README『准备工作』）"
+  command -v "$c" >/dev/null 2>&1 || die "缺少 ${c}（见 README『准备工作』）"
 done
 
 bold "2/5 获取移植工程 → $WORK"
@@ -64,7 +64,7 @@ EN_CSF="$WORK/redalert2/public/generalmd.csf"
 if [ -z "${RA2_ZH:-}" ]; then
   echo "  跳过，保持英文界面（要中文：RA2_ZH=1 ./install.sh ...）"
 elif [ ! -f "$EN_CSF" ]; then
-  echo "  没找到 $EN_CSF（你的文件里没有 langmd.mix？）→ 跳过汉化，界面保持英文"
+  echo "  没找到 ${EN_CSF}（你的文件里没有 langmd.mix？）→ 跳过汉化，界面保持英文"
 else
   mkdir -p "$WORK/zh"
   [ -f "$WORK/zh/general.csf" ] || curl -fL "$ZH_CSF_URL" -o "$WORK/zh/general.csf"
@@ -80,5 +80,5 @@ cat <<EOF
   然后用浏览器打开  http://localhost:4000/?shell=1
   想比"最快"还快：  http://localhost:4000/?shell=1&turbo=1.5   (1~4 倍，仅改节奏)
 
-  （如果开了 RA2_ZH=1）未翻译的尤里条目在：$GLOSSARY，填好第三列后重跑本脚本。
+  （如果开了 RA2_ZH=1）未翻译的尤里条目在：${GLOSSARY}，填好第三列后重跑本脚本。
 EOF
